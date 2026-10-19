@@ -1,0 +1,49 @@
+services:
+  gateway:
+    build: ./gateway
+    ports: ["8080:3000"]
+    environment:
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      USER_SERVICE_URL: http://user-service:3000
+      TRANSACTION_SERVICE_URL: http://transaction-service:3000
+      NOTIFICATION_SERVICE_URL: http://notification-service:3000
+    depends_on: [user-service, transaction-service, notification-service]
+
+  user-service:
+    build: ./user-service
+    environment:
+      PORT: 3000
+      MONGO_URL: mongodb://user-db:27017/users
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+    depends_on: [user-db]
+
+  transaction-service:
+    build: ./transaction-service
+    environment:
+      PORT: 3000
+      MONGO_URL: mongodb://transaction-db:27017/transactions
+      NOTIFICATION_SERVICE_URL: http://notification-service:3000
+    depends_on: [transaction-db, notification-service]
+
+  notification-service:
+    build: ./notification-service
+    environment:
+      PORT: 3000
+      REDIS_URL: redis://redis:6379
+    depends_on: [redis]
+
+  user-db:
+    image: mongo:7
+    volumes: [user-data:/data/db]
+
+  transaction-db:
+    image: mongo:7
+    volumes: [transaction-data:/data/db]
+
+  redis:
+    image: redis:7-alpine
+
+volumes:
+  user-data:
+  transaction-data:
