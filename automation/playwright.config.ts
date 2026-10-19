@@ -18,6 +18,8 @@ export default defineConfig({
   use: {
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
+    // SLOW_MO=500 delays each browser action by 500 ms, handy for watching headed runs.
+    launchOptions: { slowMo: Number(process.env.SLOW_MO) || 0 },
   },
   projects: [
     { name: 'api', testDir: './tests/api', use: { baseURL: env.apiUrl } },
